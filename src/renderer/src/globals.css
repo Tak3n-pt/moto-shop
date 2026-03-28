@@ -1,0 +1,320 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@import './components/documents/documents.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #f5f6f8;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e9ecef;
+  --bg-hover: #dee2e6;
+  --bg-active: #ced4da;
+  --text-primary: #1a1b1e;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+  --text-disabled: #adb5bd;
+  --border-primary: #dee2e6;
+  --border-secondary: #ced4da;
+}
+
+.dark {
+  --bg-primary: #0f1012;
+  --bg-secondary: #1a1b1e;
+  --bg-tertiary: #25262b;
+  --bg-hover: #2e2f35;
+  --bg-active: #3a3b42;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-tertiary: #9ca3af;
+  --text-disabled: #6b7280;
+  --border-primary: #3d3e42;
+  --border-secondary: #54565c;
+}
+
+@layer base {
+  * {
+    @apply border-border-primary;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  html:not(.dark) {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-secondary font-sans antialiased;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* Hide number input spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  /* Control textarea resize */
+  textarea {
+    resize: vertical;
+  }
+
+  /* Style native select option bg */
+  option {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-secondary rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-disabled;
+  }
+}
+
+/* Utility: hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animations (replaces tailwindcss-animate) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-in {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: forwards;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.zoom-in-95 {
+  animation-name: zoomIn;
+}
+
+.slide-in-from-right-5 {
+  animation-name: slideInRight;
+}
+
+/* Moto-shop themed animations */
+@keyframes slowRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slowRotateReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes floatVertical {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes slideUpFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slow-rotate {
+  animation: slowRotate 60s linear infinite;
+}
+
+.animate-slow-rotate-reverse {
+  animation: slowRotateReverse 45s linear infinite;
+}
+
+.animate-float {
+  animation: floatVertical 6s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slideUpFadeIn 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+
+@layer components {
+  .card {
+    @apply bg-bg-secondary rounded-xl p-6 border border-border-primary;
+  }
+
+  .card-hover {
+    @apply card hover:border-border-secondary hover:shadow-md transition-all duration-150;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-150 min-h-[48px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn px-6 py-3 bg-shop-steel-600 hover:bg-shop-steel-700 text-white shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply btn px-6 py-3 bg-bg-tertiary hover:bg-bg-hover text-text-primary border border-border-primary;
+  }
+
+  .btn-danger {
+    @apply btn px-6 py-3 bg-status-error hover:bg-red-600 text-white;
+  }
+
+  .btn-ghost {
+    @apply btn px-4 py-2 hover:bg-bg-hover text-text-secondary;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary placeholder:text-text-disabled focus:ring-2 focus:ring-shop-steel-500 focus:border-transparent outline-none transition-all duration-150 min-h-[48px];
+  }
+
+  .label {
+    @apply block text-sm font-medium text-text-tertiary mb-1.5;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase;
+  }
+
+  .table-container {
+    @apply bg-bg-secondary rounded-xl border border-border-primary overflow-hidden;
+  }
+
+  .table-header {
+    @apply bg-bg-tertiary;
+  }
+
+  .table-row {
+    @apply hover:bg-bg-hover cursor-pointer transition-colors duration-100;
+  }
+
+  .table-cell {
+    @apply px-6 py-4;
+  }
+
+  .money {
+    @apply font-mono font-bold;
+  }
+
+  .money-positive {
+    @apply money text-profit-positive;
+  }
+
+  .money-negative {
+    @apply money text-profit-negative;
+  }
+
+  .money-worker {
+    @apply money text-money-worker;
+  }
+
+  .money-store {
+    @apply money text-money-store;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  /* Hide sidebar, topbar, buttons, navigation */
+  aside,
+  nav,
+  .sticky,
+  button,
+  a[class*="secondary"],
+  .scrollbar-hide {
+    display: none !important;
+  }
+
+  /* Remove sidebar offset — content fills the page */
+  main,
+  .ml-64 {
+    margin-left: 0 !important;
+  }
+
+  /* Clean background */
+  body,
+  html,
+  #root,
+  main,
+  div {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Remove shadows and borders for clean print */
+  .bg-bg-secondary,
+  .bg-bg-tertiary,
+  .bg-bg-primary {
+    background: white !important;
+    box-shadow: none !important;
+  }
+
+  .border-border-primary,
+  .border-border-secondary {
+    border-color: #ccc !important;
+  }
+
+  /* Ensure text is black for readability */
+  .text-text-primary,
+  .text-text-secondary,
+  .text-text-tertiary,
+  .font-mono,
+  th, td, p, span, h1, h2, h3 {
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Warning/error colors stay for status */
+  .text-status-warning { color: #d97706 !important; }
+  .text-status-error { color: #dc2626 !important; }
+
+  /* Page setup */
+  @page {
+    margin: 15mm;
+    size: A4;
+  }
+
+  /* Mark receipt content as printable */
+  .print-receipt {
+    display: block !important;
+  }
+}

@@ -1,0 +1,122 @@
+@media print {
+  body.printing-document > #root > * {
+    display: none !important;
+  }
+  body.printing-document .document-overlay {
+    display: block !important;
+    position: static !important;
+    overflow: visible !important;
+  }
+  body.printing-document .no-print {
+    display: none !important;
+  }
+  .doc-page {
+    width: 210mm;
+  }
+  @page {
+    margin: 12mm;
+    size: A4;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+  .no-break {
+    page-break-inside: avoid;
+  }
+}
+
+/* RTL support */
+.document-rtl {
+  direction: rtl;
+  text-align: right;
+}
+.document-rtl table {
+  direction: rtl;
+}
+.document-rtl th,
+.document-rtl td {
+  text-align: right;
+}
+
+/* Base document styles */
+.doc-page {
+  background: #fff;
+  color: #000;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.doc-table th,
+.doc-table td {
+  border: 1px solid #999;
+  padding: 8px;
+  color: #000;
+  background: #fff;
+}
+
+.doc-table th {
+  background: #f0f0f0;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.doc-table tbody tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+.doc-section-header {
+  background: #e8e8e8;
+  font-weight: 700;
+  padding: 6px 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.doc-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.doc-summary-box {
+  border: 1px solid #ccc;
+  padding: 12px;
+  text-align: center;
+}
+
+.doc-summary-box .label {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.doc-summary-box .value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+}
+
+.doc-highlight-row td {
+  background: #fff3cd !important;
+  font-weight: 600;
+}
+
+.doc-total-row td {
+  background: #e8e8e8 !important;
+  font-weight: 700;
+  font-size: 14px;
+}
