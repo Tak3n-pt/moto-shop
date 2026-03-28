@@ -32,7 +32,6 @@ export default function PosPage() {
 
   const [cart, setCart] = useState<CartItem[]>([])
   const [manualBarcode, setManualBarcode] = useState('')
-  const [scannerValue, setScannerValue] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searchingParts, setSearchingParts] = useState(false)
@@ -45,55 +44,111 @@ export default function PosPage() {
   const [summary, setSummary] = useState<{ saleCount: number; totalRevenue: number; totalItems: number; totalDue: number }>({ saleCount: 0, totalRevenue: 0, totalItems: 0, totalDue: 0 })
   const [processing, setProcessing] = useState(false)
 
-  const scannerInputRef = useRef<HTMLInputElement>(null)
+  // USB Barcode Scanner Interceptor
+  // Detects rapid keystrokes (< 80ms apart) that end with Enter — this is how USB scanners work.
+  // Works regardless of which input has focus. If the user is typing manually (slow), it does nothing.
+  const scanBufferRef = useRef('')   // Resolved chars (AZERTY→digits)
+  const scanRawRef = useRef('')      // Raw chars as typed (for input cleanup)
+  const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastKeyTimeRef = useRef(0)
+  const barcodeLookupRef = useRef<(code: string) => Promise<void>>()
 
-  useEffect(() => { focusScanner(true) }, [])
   useEffect(() => {
-    loadRecentSales()
-    loadSummary()
-  }, [activeView])
-  useEffect(() => {
-    const handleFocusOut = () => {
-      window.setTimeout(() => focusScanner(), 100)
+    const SCANNER_THRESHOLD = 80 // ms between keystrokes — scanners type at ~10-50ms, humans at ~150-300ms
+    const MIN_BARCODE_LENGTH = 3
+
+    // AZERTY number row: when caps lock is off, these chars appear instead of digits
+    // Also maps physical key codes to their intended characters
+    const AZERTY_TO_NUMBER: Record<string, string> = {
+      '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
+      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
+      '§': '6', '!': '8',
     }
-    document.addEventListener('focusout', handleFocusOut)
-    return () => document.removeEventListener('focusout', handleFocusOut)
-  }, [])
-  // Fallback: capture scanner keystrokes even when hidden input loses focus
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      const active = document.activeElement as HTMLElement | null
-      if (!active || active === document.body) {
-        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    // Physical key code → digit (works regardless of keyboard layout)
+    const CODE_TO_DIGIT: Record<string, string> = {
+      'Digit1': '1', 'Digit2': '2', 'Digit3': '3', 'Digit4': '4', 'Digit5': '5',
+      'Digit6': '6', 'Digit7': '7', 'Digit8': '8', 'Digit9': '9', 'Digit0': '0',
+      'Numpad1': '1', 'Numpad2': '2', 'Numpad3': '3', 'Numpad4': '4', 'Numpad5': '5',
+      'Numpad6': '6', 'Numpad7': '7', 'Numpad8': '8', 'Numpad9': '9', 'Numpad0': '0',
+    }
+
+    const resolveChar = (e: KeyboardEvent): string | null => {
+      // If it's a digit key by physical position, use the digit
+      if (CODE_TO_DIGIT[e.code]) return CODE_TO_DIGIT[e.code]
+      // If it's an AZERTY special char, map to digit
+      if (AZERTY_TO_NUMBER[e.key]) return AZERTY_TO_NUMBER[e.key]
+      // Otherwise use the key as-is if it's a single printable char
+      if (e.key.length === 1) return e.key
+      return null
+    }
+
+    let scanDetected = false // true once we detect rapid typing (scanner mode)
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const now = Date.now()
+      const timeSinceLastKey = now - lastKeyTimeRef.current
+      lastKeyTimeRef.current = now
+
+      // Enter key — check if buffer looks like a barcode scan
+      if (e.key === 'Enter') {
+        const buffer = scanBufferRef.current
+        if (buffer.length >= MIN_BARCODE_LENGTH && scanDetected) {
           e.preventDefault()
-          setScannerValue(prev => prev + e.key)
-          focusScanner(true)
-        } else if (e.key === 'Enter' && scannerValue) {
-          e.preventDefault()
-          const value = scannerValue
-          setScannerValue('')
-          handleBarcodeLookup(value)
+          e.stopPropagation()
+          const code = buffer
+          scanBufferRef.current = ''
+          scanRawRef.current = ''
+          scanDetected = false
+          if (scanTimerRef.current) { clearTimeout(scanTimerRef.current); scanTimerRef.current = null }
+          barcodeLookupRef.current?.(code)
+          return
         }
+        // Not a scan — reset and let Enter pass through normally
+        scanBufferRef.current = ''
+        scanRawRef.current = ''
+        scanDetected = false
+        return
+      }
+
+      // Printable character
+      const ch = resolveChar(e)
+      if (ch && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // If this keystroke is slow (human speed), always reset — never block human typing
+        if (timeSinceLastKey > SCANNER_THRESHOLD) {
+          scanBufferRef.current = ''
+          scanRawRef.current = ''
+          scanDetected = false
+        }
+
+        scanBufferRef.current += ch
+        scanRawRef.current += e.key
+
+        // Only flag as scanner when 3+ chars arrived at scanner speed (< 80ms each)
+        if (scanBufferRef.current.length >= 3 && timeSinceLastKey <= SCANNER_THRESHOLD) {
+          scanDetected = true
+        }
+
+        // Only block if confirmed scanner — never block slow (human) keystrokes
+        if (scanDetected && timeSinceLastKey <= SCANNER_THRESHOLD) {
+          e.preventDefault()
+          e.stopPropagation()
+        }
+
+        if (scanTimerRef.current) clearTimeout(scanTimerRef.current)
+        scanTimerRef.current = setTimeout(() => {
+          scanBufferRef.current = ''
+          scanRawRef.current = ''
+          scanDetected = false
+        }, 200)
       }
     }
-    document.addEventListener('keydown', handleGlobalKeyDown)
-    return () => document.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [scannerValue])
 
-  const shouldRefocusScanner = () => {
-    const active = document.activeElement as HTMLElement | null
-    if (!active || active === document.body) return true
-    if (active === scannerInputRef.current) return false
-    const tag = active.tagName?.toLowerCase()
-    if (tag === 'input' || tag === 'textarea' || tag === 'select') return false
-    if (active.isContentEditable) return false
-    return true
-  }
-
-  const focusScanner = (force = false) => {
-    if (!force && !shouldRefocusScanner()) return
-    requestAnimationFrame(() => scannerInputRef.current?.focus())
-  }
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true)
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current)
+    }
+  }, [])
 
   const loadRecentSales = async () => {
     const res = await window.api.pos.getRecent(6, effectiveCashierId)
@@ -117,9 +172,10 @@ export default function PosPage() {
     addToast(t('pos.addedToCart'), 'success')
   }
 
-  const handleBarcodeLookup = async (code: string) => {
-    const trimmed = code.trim()
-    if (!trimmed) return
+  // Keep scanner ref pointing to latest closure
+  barcodeLookupRef.current = async (code: string) => {
+    const trimmed = code.replace(/[\r\n\t\x00-\x1f]/g, '').trim()
+    if (!trimmed || trimmed.length < 3) return
     const res = await window.api.parts.getByBarcode(trimmed)
     if (res.success && res.data) {
       addPartToCart(res.data)
@@ -128,19 +184,16 @@ export default function PosPage() {
     }
   }
 
-  const handleScannerKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      const value = scannerValue
-      setScannerValue('')
-      await handleBarcodeLookup(value)
-    }
-  }
-
   const handleManualAdd = async () => {
-    await handleBarcodeLookup(manualBarcode)
+    const trimmed = manualBarcode.replace(/[\r\n\t\x00-\x1f]/g, '').trim()
+    if (!trimmed) return
+    const res = await window.api.parts.getByBarcode(trimmed)
+    if (res.success && res.data) {
+      addPartToCart(res.data)
+    } else {
+      addToast(t('barcode.notFound'), 'error')
+    }
     setManualBarcode('')
-    focusScanner(true)
   }
 
   const handleSearchChange = async (value: string) => {
@@ -212,7 +265,6 @@ export default function PosPage() {
       setCustomerPhone('')
       loadRecentSales()
       loadSummary()
-      focusScanner(true)
     } else {
       addToast(res.error || t('common.error'), 'error')
     }
@@ -425,16 +477,6 @@ export default function PosPage() {
         </div>
       </div>
 
-      <input
-        ref={scannerInputRef}
-        value={scannerValue}
-        onChange={e => setScannerValue(e.target.value)}
-        onKeyDown={handleScannerKeyDown}
-        tabIndex={-1}
-        aria-hidden="true"
-        autoComplete="off"
-        className="fixed top-0 left-[-9999px] w-px h-px opacity-0"
-      />
       <Toast toasts={toasts} />
     </div>
   )

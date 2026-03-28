@@ -336,7 +336,19 @@
     "items": "Items",
     "totalAmount": "Total Amount",
     "noPurchases": "No purchases yet",
-    "search": "Search suppliers..."
+    "search": "Search suppliers...",
+    "currentDebt": "Current Debt",
+    "addDebt": "Add Debt",
+    "recordPayment": "Record Payment",
+    "debtHistory": "Debt History",
+    "type": "Type",
+    "description": "Description",
+    "amount": "Amount (DZD)",
+    "debt": "Debt",
+    "payment": "Payment",
+    "currentBalance": "Current Balance",
+    "debtPlaceholder": "e.g. Parts delivery March",
+    "paymentPlaceholder": "e.g. Cash payment"
   },
   "search": {
     "placeholder": "Search parts, customers, jobs, suppliers...",
@@ -398,15 +410,18 @@
     "cashier": "Cashier"
   },
   "debts": {
-    "title": "Customer Debts",
+    "title": "Debts",
     "totalDebt": "Total Debt",
     "totalOutstanding": "Total Outstanding",
+    "customersOweYou": "Customers Owe You",
+    "youOweSuppliers": "You Owe Suppliers",
     "unpaidJobs": "Unpaid Jobs",
     "noDebts": "No outstanding debts",
     "customer": "Customer",
     "phone": "Phone",
     "date": "Date",
     "posOutstanding": "POS Outstanding",
+    "supplierDebts": "Supplier Debts",
     "due": "Amount Due",
     "sale": "Sale"
   },

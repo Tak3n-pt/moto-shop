@@ -42,4 +42,28 @@ export function registerSuppliersIpc() {
       return { success: false, error: error.message }
     }
   })
+
+  ipcMain.handle('suppliers:addDebt', async (_event, supplierId: number, amount: number, description?: string) => {
+    try {
+      return { success: true, data: suppliersService.addDebt(supplierId, amount, description) }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  })
+
+  ipcMain.handle('suppliers:addPayment', async (_event, supplierId: number, amount: number, description?: string) => {
+    try {
+      return { success: true, data: suppliersService.addPayment(supplierId, amount, description) }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  })
+
+  ipcMain.handle('suppliers:getDebts', async () => {
+    try {
+      return { success: true, data: suppliersService.getAllDebts() }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  })
 }

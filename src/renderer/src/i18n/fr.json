@@ -336,7 +336,19 @@
     "items": "Articles",
     "totalAmount": "Montant total",
     "noPurchases": "Aucun achat pour l'instant",
-    "search": "Rechercher des fournisseurs..."
+    "search": "Rechercher des fournisseurs...",
+    "currentDebt": "Dette actuelle",
+    "addDebt": "Ajouter une dette",
+    "recordPayment": "Enregistrer un paiement",
+    "debtHistory": "Historique des dettes",
+    "type": "Type",
+    "description": "Description",
+    "amount": "Montant (DZD)",
+    "debt": "Dette",
+    "payment": "Paiement",
+    "currentBalance": "Solde actuel",
+    "debtPlaceholder": "ex: Livraison pièces mars",
+    "paymentPlaceholder": "ex: Paiement en espèces"
   },
   "search": {
     "placeholder": "Rechercher pièces, clients, travaux, fournisseurs...",
@@ -356,15 +368,18 @@
     "lookup": "Rechercher"
   },
   "debts": {
-    "title": "Dettes clients",
+    "title": "Dettes",
     "totalDebt": "Total de la dette",
     "totalOutstanding": "Total impayé",
+    "customersOweYou": "Les clients vous doivent",
+    "youOweSuppliers": "Vous devez aux fournisseurs",
     "unpaidJobs": "Travaux impayés",
     "noDebts": "Aucune dette en cours",
     "customer": "Client",
     "phone": "Téléphone",
     "date": "Date d'échéance",
-    "posOutstanding": "Crédits POS",
+    "posOutstanding": "Crédits vente pièces",
+    "supplierDebts": "Dettes fournisseurs",
     "due": "Montant dû",
     "sale": "Vente"
   },

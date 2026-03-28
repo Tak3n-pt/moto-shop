@@ -44,6 +44,8 @@ export const purchaseInvoices = sqliteTable('purchase_invoices', {
   supplierId: integer('supplier_id'),
   invoiceRef: text('invoice_ref'),
   totalAmount: real('total_amount').notNull().default(0),
+  amountPaid: real('amount_paid').notNull().default(0),
+  paymentStatus: text('payment_status', { enum: ['unpaid', 'partial', 'paid'] }).notNull().default('unpaid'),
   notes: text('notes'),
   purchasedAt: text('purchased_at').notNull().default(sql`(datetime('now'))`),
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
@@ -141,6 +143,16 @@ export const suppliers = sqliteTable('suppliers', {
   notes: text('notes'),
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
+})
+
+export const supplierLedger = sqliteTable('supplier_ledger', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  supplierId: integer('supplier_id').notNull().references(() => suppliers.id),
+  type: text('type', { enum: ['debt', 'payment'] }).notNull(),
+  amount: real('amount').notNull(),
+  description: text('description'),
+  purchaseInvoiceId: integer('purchase_invoice_id'),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`)
 })
 
 export const settings = sqliteTable('settings', {

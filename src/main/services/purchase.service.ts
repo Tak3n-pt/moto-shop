@@ -1,6 +1,6 @@
 import { getDb, getSqlite } from '../db/connection'
-import { purchaseInvoices, purchaseInvoiceItems, parts } from '../db/schema'
-import { eq, desc, sql } from 'drizzle-orm'
+import { purchaseInvoices, purchaseInvoiceItems, parts, suppliers } from '../db/schema'
+import { eq, desc, and, sql } from 'drizzle-orm'
 
 interface PurchaseItemInput {
   partId: number
@@ -31,7 +31,7 @@ export const purchaseService = {
     return { ...invoice, items: itemsWithNames }
   },
 
-  create(data: { supplierName: string; invoiceRef?: string; notes?: string; purchasedAt?: string; items: PurchaseItemInput[] }) {
+  create(data: { supplierName: string; supplierId?: number; invoiceRef?: string; notes?: string; purchasedAt?: string; amountPaid?: number; items: PurchaseItemInput[] }) {
     const sqlite = getSqlite()
     const db = getDb()
 
@@ -43,10 +43,16 @@ export const purchaseService = {
         totalAmount += item.unitBuyPrice * item.quantity
       }
 
+      const amountPaid = Math.min(Math.max(data.amountPaid || 0, 0), totalAmount)
+      const paymentStatus = amountPaid >= totalAmount ? 'paid' : amountPaid > 0 ? 'partial' : 'unpaid'
+
       const invoice = db.insert(purchaseInvoices).values({
         supplierName: data.supplierName,
+        supplierId: data.supplierId,
         invoiceRef: data.invoiceRef,
         totalAmount,
+        amountPaid,
+        paymentStatus,
         notes: data.notes,
         purchasedAt: data.purchasedAt || new Date().toISOString()
       }).returning().get()

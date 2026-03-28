@@ -336,7 +336,19 @@
     "items": "العناصر",
     "totalAmount": "المبلغ الإجمالي",
     "noPurchases": "لا توجد مشتريات بعد",
-    "search": "البحث عن موردين..."
+    "search": "البحث عن موردين...",
+    "currentDebt": "الدين الحالي",
+    "addDebt": "إضافة دين",
+    "recordPayment": "تسجيل دفعة",
+    "debtHistory": "سجل الديون",
+    "type": "النوع",
+    "description": "الوصف",
+    "amount": "المبلغ (د.ج)",
+    "debt": "دين",
+    "payment": "دفعة",
+    "currentBalance": "الرصيد الحالي",
+    "debtPlaceholder": "مثال: توصيل قطع شهر مارس",
+    "paymentPlaceholder": "مثال: دفع نقدي"
   },
   "search": {
     "placeholder": "بحث في القطع، الزبائن، الأعمال، الموردين...",
@@ -356,15 +368,18 @@
     "lookup": "بحث"
   },
   "debts": {
-    "title": "ديون الزبائن",
+    "title": "الديون",
     "totalDebt": "إجمالي الدين",
     "totalOutstanding": "إجمالي المستحقات",
+    "customersOweYou": "ديون الزبائن لك",
+    "youOweSuppliers": "ديونك للموردين",
     "unpaidJobs": "أعمال غير مدفوعة",
     "noDebts": "لا توجد ديون مستحقة",
     "customer": "الزبون",
     "phone": "الهاتف",
     "date": "التاريخ",
     "posOutstanding": "ديون بيع القطع",
+    "supplierDebts": "ديون الموردين",
     "due": "المبلغ المستحق",
     "sale": "عملية بيع"
   },

@@ -114,7 +114,10 @@ const api = {
     getById: (id: number) => ipcRenderer.invoke('suppliers:getById', id),
     create: (data: any) => ipcRenderer.invoke('suppliers:create', data),
     update: (id: number, data: any) => ipcRenderer.invoke('suppliers:update', id, data),
-    delete: (id: number) => ipcRenderer.invoke('suppliers:delete', id)
+    delete: (id: number) => ipcRenderer.invoke('suppliers:delete', id),
+    addDebt: (supplierId: number, amount: number, description?: string) => ipcRenderer.invoke('suppliers:addDebt', supplierId, amount, description),
+    addPayment: (supplierId: number, amount: number, description?: string) => ipcRenderer.invoke('suppliers:addPayment', supplierId, amount, description),
+    getDebts: () => ipcRenderer.invoke('suppliers:getDebts')
   },
 
   // Search

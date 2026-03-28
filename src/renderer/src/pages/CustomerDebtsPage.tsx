@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Wallet, AlertTriangle } from 'lucide-react'
+import { Wallet, AlertTriangle, Truck } from 'lucide-react'
 import StatCard from '@/components/ui/StatCard'
 import Spinner from '@/components/ui/Spinner'
 import EmptyState from '@/components/ui/EmptyState'
@@ -12,6 +12,7 @@ export default function CustomerDebtsPage() {
   const navigate = useNavigate()
   const [jobDebts, setJobDebts] = useState<any[]>([])
   const [posDebts, setPosDebts] = useState<any[]>([])
+  const [supplierDebts, setSupplierDebts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -19,19 +20,26 @@ export default function CustomerDebtsPage() {
   }, [])
 
   const loadDebts = async () => {
-    const res = await window.api.customers.getDebts()
-    if (res.success) {
-      setJobDebts(res.data?.jobDebts || [])
-      setPosDebts(res.data?.posDebts || [])
+    const [custRes, suppRes] = await Promise.all([
+      window.api.customers.getDebts(),
+      window.api.suppliers.getDebts()
+    ])
+    if (custRes.success) {
+      setJobDebts(custRes.data?.jobDebts || [])
+      setPosDebts(custRes.data?.posDebts || [])
+    }
+    if (suppRes.success) {
+      setSupplierDebts(suppRes.data || [])
     }
     setLoading(false)
   }
 
-  const totalOutstanding = jobDebts.reduce((sum, d) => sum + (d.totalDebt ?? 0), 0) + posDebts.reduce((sum, d) => sum + (d.totalDebt ?? 0), 0)
+  const customerOwes = jobDebts.reduce((sum, d) => sum + (d.totalDebt ?? 0), 0) + posDebts.reduce((sum, d) => sum + (d.totalDebt ?? 0), 0)
+  const youOwe = supplierDebts.reduce((sum, d) => sum + (d.balance ?? 0), 0)
 
   if (loading) return <div className="flex items-center justify-center h-64"><Spinner size="lg" /></div>
 
-  const hasNoDebts = jobDebts.length === 0 && posDebts.length === 0
+  const hasNoDebts = jobDebts.length === 0 && posDebts.length === 0 && supplierDebts.length === 0
 
   return (
     <div>
@@ -39,12 +47,18 @@ export default function CustomerDebtsPage() {
         <h1 className="text-3xl font-bold text-text-primary">{t('debts.title')}</h1>
       </div>
 
-      <div className="mb-8">
+      <div className="grid grid-cols-2 gap-4 mb-8">
         <StatCard
           icon={<Wallet size={22} />}
           iconColor="bg-status-error/10 text-status-error"
-          label={t('debts.totalOutstanding')}
-          value={formatDZD(totalOutstanding)}
+          label={t('debts.customersOweYou') || 'Customers Owe You'}
+          value={formatDZD(customerOwes)}
+        />
+        <StatCard
+          icon={<Truck size={22} />}
+          iconColor="bg-status-warning/10 text-status-warning"
+          label={t('debts.youOweSuppliers') || 'You Owe Suppliers'}
+          value={formatDZD(youOwe)}
         />
       </div>
 
@@ -113,6 +127,44 @@ export default function CustomerDebtsPage() {
                   <td className="px-6 py-4 text-right font-mono font-bold text-status-warning">{formatDZD(debt.totalDebt ?? 0)}</td>
                   <td className="px-6 py-4 text-right">
                     <button className="text-shop-steel-500 hover:text-shop-steel-400" onClick={() => navigate(`/pos/sales/${debt.saleId}`)}>{t('common.view')}</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Supplier Debts */}
+      {supplierDebts.length > 0 && (
+        <div className="bg-bg-secondary rounded-xl border border-border-primary overflow-hidden mt-8">
+          <div className="px-6 py-4 border-b border-border-primary flex items-center gap-3">
+            <Truck size={18} className="text-status-warning" />
+            <h2 className="text-lg font-semibold text-text-primary">{t('debts.supplierDebts') || 'Supplier Debts'}</h2>
+            <span className="text-sm text-text-tertiary ml-auto">{t('debts.youOweSuppliers') || 'What you owe to suppliers'}</span>
+          </div>
+          <table className="w-full">
+            <thead className="bg-bg-tertiary">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-tertiary">{t('suppliers.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-tertiary">{t('suppliers.phone') || 'Phone'}</th>
+                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-text-tertiary">{t('debts.totalDebt')}</th>
+                <th className="px-6 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-primary">
+              {supplierDebts.map((d: any) => (
+                <tr key={d.supplierId} className="hover:bg-bg-hover cursor-pointer transition-colors" onClick={() => navigate(`/suppliers/${d.supplierId}`)}>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-bg-tertiary flex items-center justify-center text-xs font-bold text-text-primary">{getInitials(d.supplierName)}</div>
+                      <span className="text-sm font-medium text-text-primary">{d.supplierName}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-text-secondary">{d.supplierPhone || '-'}</td>
+                  <td className="px-6 py-4 text-right font-mono font-bold text-status-warning">{formatDZD(d.balance)}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-shop-steel-500 hover:text-shop-steel-400">{t('common.view')}</button>
                   </td>
                 </tr>
               ))}

@@ -202,9 +202,11 @@ export function runMigrations() {
     try { sqlite.exec(stmt) } catch (_) { /* column already exists */ }
   }
 
-  // Migration: Add supplier_id to purchase_invoices
+  // Migration: Add supplier_id and payment tracking to purchase_invoices
   const purchaseAlterColumns = [
-    "ALTER TABLE purchase_invoices ADD COLUMN supplier_id INTEGER"
+    "ALTER TABLE purchase_invoices ADD COLUMN supplier_id INTEGER",
+    "ALTER TABLE purchase_invoices ADD COLUMN amount_paid REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE purchase_invoices ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'unpaid'"
   ]
   for (const stmt of purchaseAlterColumns) {
     try { sqlite.exec(stmt) } catch (_) { /* column already exists */ }
@@ -218,6 +220,19 @@ export function runMigrations() {
   for (const stmt of posAlterColumns) {
     try { sqlite.exec(stmt) } catch (_) { /* column already exists */ }
   }
+
+  // Supplier ledger table
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS supplier_ledger (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      supplier_id INTEGER NOT NULL REFERENCES suppliers(id),
+      type TEXT NOT NULL CHECK(type IN ('debt','payment')),
+      amount REAL NOT NULL,
+      description TEXT,
+      purchase_invoice_id INTEGER,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `)
 
   // Seed default admin
   const db = getDb()
